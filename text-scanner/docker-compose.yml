@@ -8,6 +8,9 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    environment:
+      FILE_STORING_URL: "http://file-storing:8001"
+      FILE_ANALYSIS_URL: "http://file-analysis:8002"
     depends_on:
       - file-storing
       - file-analysis
@@ -19,6 +22,8 @@ services:
     restart: unless-stopped
     ports:
       - "8001:8001"
+    volumes:
+      - ./file-storing/storage:/app/storage
 
   file-analysis:
     build: ./file-analysis
@@ -27,5 +32,9 @@ services:
     restart: unless-stopped
     ports:
       - "8002:8002"
+    environment:
+      FILE_STORING_URL: "http://file-storing:8001"
+    volumes:
+      - ./file-analysis/results:/app/results
     depends_on:
       - file-storing

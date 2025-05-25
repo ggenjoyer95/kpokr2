@@ -7,7 +7,7 @@ WORKDIR /app
 COPY app.py ./
 
 # Ставим зависимости
-RUN pip install fastapi uvicorn
+RUN pip install fastapi uvicorn requests python-multipart
 
 # Открываем порт
 EXPOSE 8000
