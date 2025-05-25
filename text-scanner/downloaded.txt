@@ -1,1 +1,1 @@
-Internal Server Error
+Привет, мир!
