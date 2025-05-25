@@ -2,7 +2,6 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Делаем storage томом
 VOLUME ["/app/storage"]
 
 COPY app.py ./

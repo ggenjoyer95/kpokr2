@@ -8,13 +8,10 @@ from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-# URL сервиса хранения файлов
 FILE_STORING_URL = os.getenv("FILE_STORING_URL", "http://file-storing:8001")
 
-# Папка для результатов
 RESULTS_DIR = "results"
 os.makedirs(RESULTS_DIR, exist_ok=True)
-# Папка для хешей содержимого
 HASH_DIR = os.path.join(RESULTS_DIR, "hashes")
 os.makedirs(HASH_DIR, exist_ok=True)
 
@@ -23,30 +20,24 @@ class AnalyzeRequest(BaseModel):
 
 @app.post("/analyze")
 def analyze_file(req: AnalyzeRequest):
-    # 1) Получаем файл из File Storing
     resp = requests.get(f"{FILE_STORING_URL}/files/{req.file_id}")
     if resp.status_code != 200:
         raise HTTPException(status_code=404, detail="File not found in storing service")
     content = resp.text
 
-    # 2) Считаем статистику
     paragraphs = len([p for p in content.split("\n\n") if p.strip()])
     words = len(content.split())
     chars = len(content)
 
-    # 3) Вычисляем хеш содержимого для сравнения
     sha256 = hashlib.sha256(content.encode("utf-8")).hexdigest()
     hash_path = os.path.join(HASH_DIR, f"{sha256}.txt")
 
-    # similarity = 100, если такой хеш уже есть (100% совпадение)
     similarity = 100 if os.path.exists(hash_path) else 0
 
-    # 4) Сохраняем хеш для будущих сравнений
     if similarity == 0:
         with open(hash_path, "w", encoding="utf-8") as hf:
             hf.write(content)
 
-    # 5) Собираем результат
     result = {
         "file_id": req.file_id,
         "paragraphs": paragraphs,
@@ -55,7 +46,6 @@ def analyze_file(req: AnalyzeRequest):
         "similarity": similarity,
     }
 
-    # Сохраняем результат в JSON-файл
     out_path = os.path.join(RESULTS_DIR, f"{req.file_id}.json")
     with open(out_path, "w", encoding="utf-8") as rf:
         json.dump(result, rf)
